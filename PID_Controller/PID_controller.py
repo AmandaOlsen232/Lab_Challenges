@@ -6,7 +6,7 @@ my.MyPlot()
 
 class PID:
     
-    def __init__(self, solver, kp=-1, ki=-5, kd=0, p_final=0.5):
+    def __init__(self, solver, kp=-1, ki=-5, kd=1, p_final=0.5):
         self.V = 520.0 #ft/s
         self.rho = 0.00187258 #slug/ft^3
         self.altitude = 8000.0 #ft
@@ -58,9 +58,6 @@ class PID:
             count += 1
         
         return self.int_error*self.ki
-    
-    def D(self):
-        return self.kd*((self.track_error[-1] - self.track_error[-2])/self.delta_t)
         
     def update_error(self):
         self.error = self.p_final - self.p
@@ -91,7 +88,7 @@ class PID:
         self.track_delta_a.append(self.delta_a)
         
 if __name__ == "__main__":
-    n = PID("numerical", kp=-0.5, ki=-4)
+    n = PID("numerical", kp=-1, ki=-5, kd=0)
     n.track()
     
     for _ in range(int(n.t_final/n.delta_t)):
@@ -107,13 +104,11 @@ if __name__ == "__main__":
     delta_a = np.array(n.track_delta_a)
     
     plt.plot(time, p, color="blue", label="PID Controller")
-    plt.xlabel("Time [sec]")
-    plt.ylabel("p")
-    plt.legend()
     
-    # a = PID("analytic")
-    # a.static_delta_a()
-    # a.track()
+    
+    a = PID("analytic")
+    a.static_delta_a()
+    a.track()
     
     # for _ in range(int(a.t_final/a.delta_t)):
     #     a.update_time()
@@ -129,3 +124,6 @@ if __name__ == "__main__":
     
     # plt.plot(time, p, color="red", label="analytic")
     
+    plt.xlabel("Time [sec]")
+    plt.ylabel("p")
+    plt.legend()
