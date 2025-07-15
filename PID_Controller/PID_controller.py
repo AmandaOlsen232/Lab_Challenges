@@ -1,10 +1,12 @@
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import MyModules as my
+my.MyPlot()
 
 class PID:
     
-    def __init__(self, solver, kp=-1, ki=-100, p_final=0.5):
+    def __init__(self, solver, kp=-1, ki=-5, kd=0, p_final=0.5):
         self.V = 520.0 #ft/s
         self.rho = 0.00187258 #slug/ft^3
         self.altitude = 8000.0 #ft
@@ -32,6 +34,7 @@ class PID:
         
         self.kp = kp
         self.ki = ki
+        self.kd = kd
         
         self.solver = solver
         
@@ -55,6 +58,9 @@ class PID:
             count += 1
         
         return self.int_error*self.ki
+    
+    def D(self):
+        return self.kd*((self.track_error[-1] - self.track_error[-2])/self.delta_t)
         
     def update_error(self):
         self.error = self.p_final - self.p
@@ -85,25 +91,14 @@ class PID:
         self.track_delta_a.append(self.delta_a)
         
 if __name__ == "__main__":
-    n = PID("numerical")
-    
+    n = PID("numerical", kp=-0.5, ki=-4)
     n.track()
-    
-    # n.update_delta_a()
-    # a.static_delta_a()
-    # n.static_delta_a()
     
     for _ in range(int(n.t_final/n.delta_t)):
         n.update_time()
-
-        
         n.update_delta_a()
-
         n.update_p()
-
         n.update_error()
-
-        
         n.track()
         
     error = np.array(n.track_error)
@@ -111,18 +106,26 @@ if __name__ == "__main__":
     p = np.array(n.track_p)
     delta_a = np.array(n.track_delta_a)
     
-    plt.plot(time, p)
-    # while pid.t <= 3.0:
-        
-    #     pid.update_time()
-    #     pid.update_delta_a()
-    #     pid.update_p()
-    #     pid.update_error()
-        
-    #     track_error.append(pid.error)
-    #     track_time.append(pid.t)
-    #     track_p.append(pid.p)
-    #     track_delta_a.append(pid.delta_a)
-    #     print(pid.t, pid.delta_a, pid.p, pid.error)
+    plt.plot(time, p, color="blue", label="PID Controller")
+    plt.xlabel("Time [sec]")
+    plt.ylabel("p")
+    plt.legend()
     
-    # plt.plot(track_time, track_p)
+    # a = PID("analytic")
+    # a.static_delta_a()
+    # a.track()
+    
+    # for _ in range(int(a.t_final/a.delta_t)):
+    #     a.update_time()
+    #     # n.update_delta_a()
+    #     a.update_p()
+    #     a.update_error()
+    #     a.track()
+        
+    # error = np.array(a.track_error)
+    # time = np.array(a.track_time)
+    # p = np.array(a.track_p)
+    # delta_a = np.array(a.track_delta_a)
+    
+    # plt.plot(time, p, color="red", label="analytic")
+    
